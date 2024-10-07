@@ -1,10 +1,11 @@
 import { Schema, Document, model } from 'mongoose';
+import { Role } from 'src/auth/enums/roles.enum';
 
 export interface User extends Document {
   name: string;
   email: string;
   password: string;
-  role: string;
+  role: Role;
   refreshToken: string;
 }
 
@@ -14,8 +15,8 @@ export const UserSchema = new Schema({
   password: { type: String, required: true },
   role: {
     type: String,
-    enum: ['Admin', 'Manager', 'Client'],
-    default: 'Client',
+    enum: Object.values(Role),
+    default: Role.Client,
   },
   refreshToken: { type: String },
 });
