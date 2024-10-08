@@ -7,6 +7,7 @@ import {
   Body,
   Param,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { CreateProductDto } from './dtos/create-product.dto';
@@ -15,6 +16,7 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '../auth/enums/roles.enum';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
+import { Product } from './schema/product.schema';
 
 @Controller('products')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -28,9 +30,24 @@ export class ProductController {
   }
 
   @Get()
-  @Roles(Role.Admin, Role.Manager, Role.Client)
-  async getAllProducts() {
-    return this.productsService.findAllProducts();
+  async getAllProducts(
+    @Query('category') category?: string,
+    @Query('minPrice') minPrice?: number,
+    @Query('maxPrice') maxPrice?: number,
+    @Query('name') name?: string,
+    @Query('description') description?: string,
+    @Query('minStock') minStock?: number,
+    @Query('maxStock') maxStock?: number,
+  ): Promise<Product[]> {
+    return this.productsService.findFiltered(
+      category,
+      minPrice,
+      maxPrice,
+      name,
+      description,
+      minStock,
+      maxStock,
+    );
   }
 
   @Get('/:id')

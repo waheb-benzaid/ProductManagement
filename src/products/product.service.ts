@@ -14,6 +14,49 @@ export class ProductService {
     return newProduct.save();
   }
 
+  async findFiltered(
+    category?: string,
+    minPrice?: number,
+    maxPrice?: number,
+    name?: string,
+    description?: string,
+    minStock?: number,
+    maxStock?: number,
+  ): Promise<Product[]> {
+    const filter: any = {};
+
+    // Filter by category
+    if (category) {
+      filter['categoryId'] = category;
+    }
+
+    // Filter by price range
+    if (minPrice || maxPrice) {
+      filter['price'] = {};
+      if (minPrice) filter['price'].$gte = minPrice;
+      if (maxPrice) filter['price'].$lte = maxPrice;
+    }
+
+    // Filter by name (case-insensitive search)
+    if (name) {
+      filter['name'] = { $regex: new RegExp(name, 'i') }; // Case-insensitive regex
+    }
+
+    // Filter by description (case-insensitive search)
+    if (description) {
+      filter['description'] = { $regex: new RegExp(description, 'i') }; // Case-insensitive regex
+    }
+
+    // Filter by stock range
+    if (minStock || maxStock) {
+      filter['stock'] = {};
+      if (minStock) filter['stock'].$gte = minStock;
+      if (maxStock) filter['stock'].$lte = maxStock;
+    }
+
+    return this.productModel.find(filter).populate('categoryId').exec();
+  }
+
   async findAllProducts(): Promise<Product[]> {
     return this.productModel.find().exec();
   }
