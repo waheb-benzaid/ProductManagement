@@ -7,8 +7,6 @@ import { JwtStrategy } from './jwt.strategy/jwt.strategy';
 import { ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { UserSchema } from './schemas/user.schema';
-import { RolesGuard } from './guards/roles.guard';
-import { APP_GUARD } from '@nestjs/core'; 
 
 @Module({
   imports: [
@@ -26,15 +24,16 @@ import { APP_GUARD } from '@nestjs/core';
     }),
     MongooseModule.forFeature([{ name: 'User', schema: UserSchema }]),
   ],
+
   providers: [
     AuthService,
     JwtStrategy,
-    {
-      provide: APP_GUARD,
-      useClass: RolesGuard, // Apply the RolesGuard globally
-    },
+    // {
+    //   provide: APP_GUARD,
+    //   useClass: RolesGuard, // Apply the RolesGuard globally
+    // },
   ],
   controllers: [AuthController],
-  exports: [JwtStrategy, PassportModule],
+  exports: [JwtStrategy, PassportModule, JwtModule],
 })
 export class AuthModule {}

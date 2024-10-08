@@ -27,7 +27,7 @@ export class AuthService {
       password: hashedPassword,
       role: role || 'Client',
     });
-    const payload = { id: newUser._id };
+    const payload = { id: newUser._id, role: newUser.role };
     const accessToken = this.jwtService.sign(payload);
     const refreshToken = this.jwtService.sign(payload, { expiresIn: '10d' }); // Long-lived refresh token
 
@@ -41,6 +41,8 @@ export class AuthService {
 
     const user = await this.userModel.findOne({ email });
 
+    console.log(user, 'user');
+
     if (!user) {
       throw new UnauthorizedException('invalid email or password');
     }
@@ -51,7 +53,13 @@ export class AuthService {
       throw new UnauthorizedException('invalid email or password');
     }
 
-    const payload = { id: user._id };
+    const payload = {
+      id: user._id.toString(),
+      email: user.email, // Include email in payload
+      role: user.role,
+      sub: user._id.toString(), // Include sub for JWT standard
+    };
+
     const accessToken = this.jwtService.sign(payload);
     const refreshToken = this.jwtService.sign(payload, { expiresIn: '7d' });
 
@@ -73,11 +81,14 @@ export class AuthService {
       }
 
       // Generate a new access token
-      const newAccessToken = this.jwtService.sign({ id: user._id });
+      const newAccessToken = this.jwtService.sign({
+        id: user._id,
+        role: user.role,
+      });
 
       return { accessToken: newAccessToken };
     } catch (error) {
-      throw new UnauthorizedException('Invalid refresh token');
+      throw new UnauthorizedException('Invalid refresh token', error);
     }
   }
 }

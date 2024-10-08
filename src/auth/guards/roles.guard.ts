@@ -1,4 +1,3 @@
-// src/auth/guards/roles.guard.ts
 import {
   Injectable,
   CanActivate,
@@ -8,7 +7,6 @@ import {
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import { Role } from './../enums/roles.enum';
-import { User } from '../schemas/user.schema';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
@@ -22,17 +20,35 @@ export class RolesGuard implements CanActivate {
       context.getHandler(),
       context.getClass(),
     ]);
-
-    if (!requiredRoles) {
-      return true; // If no role is required, anyone can access
-    }
+    console.log('RolesGuard - Required roles:', requiredRoles);
 
     const request = context.switchToHttp().getRequest();
-    const user: User = request.user; // Assumes user has been set in request by JWT Guard
+    const user = request.user;
 
-    if (!user || !requiredRoles.includes(user.role)) {
+    console.log('RolesGuard - User from request:', user);
+
+    if (!requiredRoles) {
+      return true;
+    }
+
+    if (!user) {
+      console.log('RolesGuard - No user found in request');
+      throw new ForbiddenException('No user found');
+    }
+
+    if (!user.role) {
+      console.log('RolesGuard - No role found for user');
+      throw new ForbiddenException('User role not found');
+    }
+
+    const hasRole = requiredRoles.includes(user.role);
+    console.log(
+      `RolesGuard - User role: ${user.role}, Has required role: ${hasRole}`,
+    );
+
+    if (!hasRole) {
       throw new ForbiddenException(
-        'You do not have permission to access this resource',
+        `Required roles: ${requiredRoles.join(', ')}, User role: ${user.role}`,
       );
     }
 

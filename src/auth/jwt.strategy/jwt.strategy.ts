@@ -8,10 +8,7 @@ import { Model } from 'mongoose';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor(
-    @InjectModel('User')
-    private userModel: Model<User>,
-  ) {
+  constructor(@InjectModel('User') private userModel: Model<User>) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
@@ -20,12 +17,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: any) {
-    const { id } = payload;
-    const user = await this.userModel.findById(id);
-
+    const user = await this.userModel.findById(payload.id).exec();
     if (!user) {
-      throw new UnauthorizedException('You should login');
+      throw new UnauthorizedException();
     }
-    return user;
+    return user; // This user will be attached to the request object
   }
 }
