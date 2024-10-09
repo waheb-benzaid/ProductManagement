@@ -58,7 +58,7 @@ export class AuthService {
       sub: user._id.toString(), // Include sub for JWT standard
     };
 
-    const accessToken = this.jwtService.sign(payload);
+    const accessToken = this.jwtService.sign(payload, { expiresIn: '15m' });
     const refreshToken = this.jwtService.sign(payload, { expiresIn: '7d' });
 
     // Store the refresh token in the database
