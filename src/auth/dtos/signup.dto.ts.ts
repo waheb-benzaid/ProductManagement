@@ -1,4 +1,12 @@
-import { IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator';
+import {
+  IsEmail,
+  IsNotEmpty,
+  IsString,
+  MinLength,
+  IsOptional,
+  IsEnum,
+} from 'class-validator';
+import { Role } from 'src/auth/enums/roles.enum';
 
 export class SignUpDto {
   @IsNotEmpty()
@@ -6,12 +14,15 @@ export class SignUpDto {
   readonly name: string;
 
   @IsNotEmpty()
-  @IsEmail({}, { message: 'please enter a correct email' })
+  @IsEmail({}, { message: 'Please enter a correct email' })
   readonly email: string;
 
   @IsNotEmpty()
   @IsString()
-  @MinLength(6)
+  @MinLength(4, { message: 'Password must be at least 4 characters long' })
   readonly password: string;
-  readonly role?: string;
+
+  @IsOptional()
+  @IsEnum(Role, { message: 'Invalid role' }) // Validate that the role is one of the predefined values
+  readonly role?: Role; // Optional, default to 'Client'
 }
