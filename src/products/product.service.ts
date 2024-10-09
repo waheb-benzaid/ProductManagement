@@ -1,15 +1,35 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Product } from './schema/product.schema';
 import { CreateProductDto } from './dtos/create-product.dto';
 import { UpdateProductDto } from './dtos/update-product.dto';
+import { Category } from 'src/categories/schemas/category.schema';
 
 @Injectable()
 export class ProductService {
-  constructor(@InjectModel('Product') private productModel: Model<Product>) {}
+  constructor(
+    @InjectModel('Product') private productModel: Model<Product>,
+    @InjectModel('Category') private categoryModel: Model<Category>,
+  ) {}
 
   async createProduct(createProductDto: CreateProductDto): Promise<Product> {
+    // First check if the category exists and is not deleted
+    const category = await this.categoryModel.findOne({
+      _id: createProductDto.categoryId,
+      isDeleted: false,
+    });
+
+    if (!category) {
+      throw new NotFoundException(
+        `Category with ID ${createProductDto.categoryId} not found or is deleted`,
+      );
+    }
+
     const newProduct = new this.productModel(createProductDto);
     return newProduct.save();
   }
@@ -103,15 +123,31 @@ export class ProductService {
     return updatedProduct;
   }
 
-  async deleteProduct(productId: string): Promise<void> {
-    const result = await this.productModel.findByIdAndUpdate(
+  async deleteProduct(productId: string): Promise<{ message: string }> {
+    const product = await this.productModel.findById(productId);
+
+    if (!product) {
+      throw new NotFoundException(`Product with ID ${productId} not found`);
+    }
+
+    if (product.isDeleted) {
+      throw new BadRequestException(
+        `Product with ID ${productId} is already deleted`,
+      );
+    }
+
+    // Perform the soft delete
+    await this.productModel.findByIdAndUpdate(
       productId,
-      { isDeleted: true }, // Mark as deleted
+      {
+        isDeleted: true,
+        deletedAt: new Date(), // Optional: track when it was deleted
+      },
       { new: true },
     );
 
-    if (!result) {
-      throw new NotFoundException(`Product with ID ${productId} not found`);
-    }
+    return {
+      message: `Product with ID ${productId} has been successfully deleted`,
+    };
   }
 }

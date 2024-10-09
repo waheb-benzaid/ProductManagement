@@ -16,22 +16,20 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async signUp(
-    signUpDto: SignUpDto,
-  ): Promise<{ accessToken: string; refreshToken: string }> {
+  async signUp(signUpDto: SignUpDto): Promise<{ message: string }> {
     const { name, email, password, role } = signUpDto;
     const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = await this.userModel.create({
+    await this.userModel.create({
       name,
       email,
       password: hashedPassword,
       role: role || 'Client',
     });
-    const payload = { id: newUser._id, role: newUser.role };
-    const accessToken = this.jwtService.sign(payload);
-    const refreshToken = this.jwtService.sign(payload, { expiresIn: '10d' }); // Long-lived refresh token
+    // const payload = { id: newUser._id, role: newUser.role };
+    // const accessToken = this.jwtService.sign(payload);
+    // const refreshToken = this.jwtService.sign(payload, { expiresIn: '10d' }); // Long-lived refresh token
 
-    return { accessToken, refreshToken };
+    return { message: 'User created successfully. Please login to continue.' };
   }
 
   async login(

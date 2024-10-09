@@ -6,6 +6,7 @@ export interface Product extends Document {
   price: number;
   categoryId: string;
   stock: number;
+  isDeleted: boolean;
 }
 
 export const ProductSchema = new Schema({
