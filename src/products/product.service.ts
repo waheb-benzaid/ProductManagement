@@ -22,7 +22,14 @@ export class ProductService {
     description?: string,
     minStock?: number,
     maxStock?: number,
-  ): Promise<Product[]> {
+    page: number = 1,
+    limit: number = 10,
+  ): Promise<{
+    products: Product[];
+    total: number;
+    currentPage: number;
+    totalPages: number;
+  }> {
     const filter: any = {};
 
     // Filter by category
@@ -54,7 +61,17 @@ export class ProductService {
       if (maxStock) filter['stock'].$lte = maxStock;
     }
 
-    return this.productModel.find(filter).populate('categoryId').exec();
+    // Calculate pagination
+    const total = await this.productModel.countDocuments(filter).exec();
+    const totalPages = Math.ceil(total / limit);
+    const products = await this.productModel
+      .find(filter)
+      .populate('categoryId')
+      .skip((page - 1) * limit) // Skip the records of previous pages
+      .limit(limit) // Limit the results to the specified number
+      .exec();
+
+    return { products, total, currentPage: page, totalPages };
   }
 
   async findAllProducts(): Promise<Product[]> {

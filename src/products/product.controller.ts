@@ -38,7 +38,14 @@ export class ProductController {
     @Query('description') description?: string,
     @Query('minStock') minStock?: number,
     @Query('maxStock') maxStock?: number,
-  ): Promise<Product[]> {
+    @Query('page') page = 1,
+    @Query('limit') limit = 10,
+  ): Promise<{
+    products: Product[];
+    total: number;
+    currentPage: number;
+    totalPages: number;
+  }> {
     return this.productsService.findFiltered(
       category,
       minPrice,
@@ -47,6 +54,8 @@ export class ProductController {
       description,
       minStock,
       maxStock,
+      page,
+      limit,
     );
   }
 
