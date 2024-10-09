@@ -30,7 +30,9 @@ export class ProductService {
     currentPage: number;
     totalPages: number;
   }> {
-    const filter: any = {};
+    const filter: any = {
+      $or: [{ isDeleted: false }, { isDeleted: { $exists: false } }],
+    };
 
     // Filter by category
     if (category) {
@@ -102,7 +104,12 @@ export class ProductService {
   }
 
   async deleteProduct(productId: string): Promise<void> {
-    const result = await this.productModel.findByIdAndDelete(productId);
+    const result = await this.productModel.findByIdAndUpdate(
+      productId,
+      { isDeleted: true }, // Mark as deleted
+      { new: true },
+    );
+
     if (!result) {
       throw new NotFoundException(`Product with ID ${productId} not found`);
     }

@@ -19,7 +19,7 @@ export class CategoryService {
   }
 
   async findAllCategories(): Promise<Category[]> {
-    return this.categoryModel.find().exec();
+    return this.categoryModel.find({ isDeleted: false }).exec(); //get only the categories with isDeleted = false
   }
 
   async findCategoryById(categoryId: string): Promise<Category> {
@@ -46,7 +46,12 @@ export class CategoryService {
   }
 
   async deleteCategory(categoryId: string): Promise<void> {
-    const result = await this.categoryModel.findByIdAndDelete(categoryId);
+    const result = await this.categoryModel.findByIdAndUpdate(
+      categoryId,
+      { isDeleted: true },
+      { new: true },
+    );
+
     if (!result) {
       throw new NotFoundException(`Category with ID ${categoryId} not found`);
     }

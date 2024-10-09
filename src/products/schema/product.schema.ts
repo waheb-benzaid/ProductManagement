@@ -14,4 +14,5 @@ export const ProductSchema = new Schema({
   price: { type: Number, required: true },
   categoryId: { type: Schema.Types.ObjectId, ref: 'Category', required: true },
   stock: { type: Number, required: true, min: 0 },
+  isDeleted: { type: Boolean, default: false },
 });
