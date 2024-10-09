@@ -30,6 +30,7 @@ export class ProductController {
   }
 
   @Get()
+  @Roles(Role.Admin, Role.Manager, Role.Client)
   async getAllProducts(
     @Query('category') category?: string,
     @Query('minPrice') minPrice?: number,
